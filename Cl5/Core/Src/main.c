@@ -47,12 +47,11 @@ TIM_HandleTypeDef htim5;
 
 /* USER CODE BEGIN PV */
 //uint32_t QEIReadRaw;
-//float degree;
-//float radian;
+//float deg,rad;
 
 typedef struct
 {
-	// for record New / Old value to calculate dx / d
+	// for record New / Old value to calculate dx / dt
 	uint32_t Position[2];
 	uint64_t TimeStamp[2];
 
@@ -127,8 +126,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 //	  QEIReadRaw = __HAL_TIM_GET_COUNTER(&htim3);
-//	  degree = (QEIReadRaw/3072.0)*360;
-//	  radian = (QEIReadRaw/3072.0)*2;
+//	  deg = (QEIReadRaw/3072.0)*360.0;
+//	  rad = (QEIReadRaw/3072.0)*2.0;
 
 	  //Call every 0.1 s
 	  static uint64_t timestamp =0;
