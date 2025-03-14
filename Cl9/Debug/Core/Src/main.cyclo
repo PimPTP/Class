@@ -4,6 +4,6 @@
 ../Core/Src/main.c:211:13:MX_SPI3_Init	2
 ../Core/Src/main.c:251:13:MX_GPIO_Init	1
 ../Core/Src/main.c:299:6:SPITxRx_Setup	1
-../Core/Src/main.c:319:6:SPITxRx_readIO	2
-../Core/Src/main.c:341:6:HAL_SPI_TxRxCpltCallback	1
-../Core/Src/main.c:351:6:Error_Handler	1
+../Core/Src/main.c:307:6:SPITxRx_readIO	2
+../Core/Src/main.c:319:6:HAL_SPI_TxRxCpltCallback	1
+../Core/Src/main.c:329:6:Error_Handler	1

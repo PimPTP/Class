@@ -4,8 +4,8 @@
 ../Core/Src/main.c:220:13:MX_DMA_Init	1
 ../Core/Src/main.c:242:13:MX_GPIO_Init	1
 ../Core/Src/main.c:279:6:UARTPollingMethod	3
-../Core/Src/main.c:300:6:DummyTask	2
-../Core/Src/main.c:310:6:UARTInterruptConfig	1
-../Core/Src/main.c:315:6:UARTDMAConfig	1
-../Core/Src/main.c:320:6:HAL_UART_RxCpltCallback	2
-../Core/Src/main.c:340:6:Error_Handler	1
+../Core/Src/main.c:307:6:DummyTask	2
+../Core/Src/main.c:317:6:UARTInterruptConfig	1
+../Core/Src/main.c:323:6:UARTDMAConfig	1
+../Core/Src/main.c:329:6:HAL_UART_RxCpltCallback	2
+../Core/Src/main.c:352:6:Error_Handler	1

@@ -70,12 +70,15 @@ arm_matrix_instance_f32 AtmA;
 float32_t AaB_f32[16]; // A Addition B
 arm_matrix_instance_f32 AaB;
 
+float32_t AmB_f32[16]; // A multiply B
+arm_matrix_instance_f32 AmB;
+
 volatile arm_status CalcSt;
 
 arm_pid_instance_f32 PID = {0};
 float position =0;
 float setposition =0;
-float Vfeedback = 0;
+float Vfeedback =0;
 
 /* USER CODE END PV */
 
@@ -130,6 +133,7 @@ int main(void)
   arm_mat_init_f32(&AtmA, 4, 4, (float32_t*) &AtmA_f32);
   arm_mat_init_f32(&B, 4, 1, (float32_t*) &B_f32);
   arm_mat_init_f32(&AaB, 4, 4, (float32_t*) &AaB_f32);
+  arm_mat_init_f32(&AmB, 4, 1, (float32_t*) &AmB_f32);
 
   PID.Kp =0.1;
   PID.Ki =0.00001;
@@ -145,18 +149,19 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  static GPIO_PinState B1[2];
-//	  B1[0] = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
-//	  if(B1[0]== 0 && B1[1] == 1)
-//	  {
-//
-//	  CalcSt = arm_mat_trans_f32(&A, &At);
-//	  CalcSt = arm_mat_mult_f32(&At, &A , &AtmA);
-//	  //wrong add
-//	  CalcSt = arm_mat_add_f32(&A, &B, &AaB);
-//
-//	  }
-//	  B1[1] = B1[0];
+	  static GPIO_PinState B1[2];
+	  B1[0] = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
+	  if(B1[0]== 0 && B1[1] == 1)
+	  {
+
+	  CalcSt = arm_mat_trans_f32(&A, &At);
+	  CalcSt = arm_mat_mult_f32(&At, &A , &AtmA);
+	  //wrong add
+	  //CalcSt = arm_mat_add_f32(&A, &B, &AaB);
+	  CalcSt = arm_mat_mult_f32(&A, &B, &AmB);
+
+	  }
+	  B1[1] = B1[0];
 
 	  static uint32_t timestamp =0;
 	  if(timestamp < HAL_GetTick())

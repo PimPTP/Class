@@ -60,8 +60,8 @@ all: main-build
 main-build: Cl1.elf secondary-outputs
 
 # Tool invocations
-Cl1.elf Cl1.map: $(OBJS) $(USER_OBJS) C:\Users\User\Documents\GitHub\Class\Cl1\STM32G474RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Cl1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\User\Documents\GitHub\Class\Cl1\STM32G474RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Cl1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Cl1.elf Cl1.map: $(OBJS) $(USER_OBJS) D:\PIM\MicroCon\Class\Cl1\STM32G474RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Cl1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\PIM\MicroCon\Class\Cl1\STM32G474RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Cl1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
