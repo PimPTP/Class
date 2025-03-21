@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "string.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,13 +42,15 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef hlpuart1;
+UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_lpuart1_rx;
 DMA_HandleTypeDef hdma_lpuart1_tx;
+DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
-uint8_t RxBuffer[20];
-uint8_t TxBuffer[40];
-
+uint8_t RxBuffer[50];
+uint8_t TxBuffer[50];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,12 +58,11 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void UARTPollingMethod();
 void DummyTask();
-void UARTInterruptConfig();
-void UARTDMAConfig();
-
+void UARTConfig();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -100,12 +100,12 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_LPUART1_UART_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t text[] = "HELLO FIBO";
-  HAL_UART_Transmit(&hlpuart1, text, 11, 10);
+  uint8_t text[] = "HELLO ^^";
+  HAL_UART_Transmit(&hlpuart1, text, 9, 10);
 
-  //UARTInterruptConfig();
-  UARTDMAConfig();
+  UARTConfig();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,6 +114,9 @@ int main(void)
   {
 	  //UARTPollingMethod();
 	  DummyTask();
+	  if(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin)){
+		  HAL_UART_Transmit(&huart1, text, 9, 10);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -215,6 +218,54 @@ static void MX_LPUART1_UART_Init(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -231,6 +282,12 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  /* DMA1_Channel4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
 }
 
@@ -278,27 +335,20 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void UARTPollingMethod()
 {
-	//read UART 10 char with in 10s
 	HAL_StatusTypeDef HAL_status = HAL_UART_Receive(&hlpuart1, RxBuffer, 10, 10000);
 
-	//if complete read 10 char
 	if(HAL_status == HAL_OK)
 	{
-		//(for string only) Add string stop symbol \0 to end string
 		RxBuffer[10] = '\0';
 
-		//return received char
 		sprintf((char*)TxBuffer,"Received : %s\r\n",RxBuffer);
 		HAL_UART_Transmit(&hlpuart1, TxBuffer, strlen((char*)TxBuffer), 10);
 	}
-	//Timeout : print only received char
 	else if(HAL_status == HAL_TIMEOUT)
 	{
-		//(for string only) Add string stop symbol \0 to end string
 		uint32_t lastCharPos = hlpuart1.RxXferSize - hlpuart1.RxXferCount;
 		RxBuffer[lastCharPos] = '\0';
 
-		//return received char
 		sprintf((char*)TxBuffer,"Received Timeout : %s\r\n",RxBuffer);
 		HAL_UART_Transmit(&hlpuart1, TxBuffer, strlen((char*)TxBuffer), 10);
 	}
@@ -313,36 +363,22 @@ void DummyTask()
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	}
 }
-
-void UARTInterruptConfig()
+void UARTConfig()
 {
-	//start UART in Interrupt Mode
-	HAL_UART_Receive_IT(&hlpuart1, RxBuffer, 10);
+	HAL_UART_Receive_DMA(&huart1, RxBuffer, huart1.RxXferCount);
 }
-
-void UARTDMAConfig()
-{
-	//start UART in DMA Mode
-	HAL_UART_Receive_DMA(&hlpuart1, RxBuffer, 10);
-}
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart == &hlpuart1)
+	if(huart == &huart1)
 	{
-		//(for string only) Add string stop symbol \0 to end string
-		RxBuffer[10] = '\0';
+		uint32_t lastCharPos = huart1.RxXferSize - huart1.RxXferCount;
+		RxBuffer[lastCharPos] = '\0';
 
-		//return received char
 		sprintf((char*)TxBuffer,"Received : %s\r\n",RxBuffer);
-		//HAL_UART_Transmit_IT(&hlpuart1, TxBuffer, strlen((char*)TxBuffer));
 		HAL_UART_Transmit_DMA(&hlpuart1, TxBuffer, strlen((char*)TxBuffer));
 
-		//recall Receive
-		//HAL_UART_Receive_IT(&hlpuart1, RxBuffer, 10);
 	}
 }
-
 /* USER CODE END 4 */
 
 /**
