@@ -43,8 +43,6 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart1;
-DMA_HandleTypeDef hdma_lpuart1_rx;
-DMA_HandleTypeDef hdma_lpuart1_tx;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
@@ -60,8 +58,6 @@ static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void UARTPollingMethod();
-void DummyTask();
 void UARTConfig();
 /* USER CODE END PFP */
 
@@ -103,23 +99,20 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   uint8_t text[] = "HELLO ^^";
-  HAL_UART_Transmit(&hlpuart1, text, 9, 10);
-
   UARTConfig();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //UARTPollingMethod();
-	  DummyTask();
-	  if(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin)){
-		  HAL_UART_Transmit(&huart1, text, 9, 10);
-	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  if(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin)){
+		  HAL_UART_Transmit(&huart1, text, 9, 10);
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -243,7 +236,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
   huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
+  if (HAL_RS485Ex_Init(&huart1, UART_DE_POLARITY_HIGH, 0, 0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -282,12 +275,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-  /* DMA1_Channel4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
 
 }
 
@@ -333,52 +320,23 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void UARTPollingMethod()
-{
-	HAL_StatusTypeDef HAL_status = HAL_UART_Receive(&hlpuart1, RxBuffer, 10, 10000);
-
-	if(HAL_status == HAL_OK)
-	{
-		RxBuffer[10] = '\0';
-
-		sprintf((char*)TxBuffer,"Received : %s\r\n",RxBuffer);
-		HAL_UART_Transmit(&hlpuart1, TxBuffer, strlen((char*)TxBuffer), 10);
-	}
-	else if(HAL_status == HAL_TIMEOUT)
-	{
-		uint32_t lastCharPos = hlpuart1.RxXferSize - hlpuart1.RxXferCount;
-		RxBuffer[lastCharPos] = '\0';
-
-		sprintf((char*)TxBuffer,"Received Timeout : %s\r\n",RxBuffer);
-		HAL_UART_Transmit(&hlpuart1, TxBuffer, strlen((char*)TxBuffer), 10);
-	}
-}
-
-void DummyTask()
-{
-	static uint32_t timestamp = 0;
-	if(HAL_GetTick()>=timestamp)
-	{
-		timestamp = HAL_GetTick()+100;
-		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-	}
-}
 void UARTConfig()
 {
 	HAL_UART_Receive_DMA(&huart1, RxBuffer, 32);
 }
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart1)
 	{
-		uint32_t lastCharPos = huart1.RxXferSize - huart1.RxXferCount;
-		RxBuffer[lastCharPos] = '\0';
+		RxBuffer[32] = '\0';
 
 		sprintf((char*)TxBuffer,"Received : %s\r\n",RxBuffer);
-		HAL_UART_Transmit_DMA(&hlpuart1, TxBuffer, strlen((char*)TxBuffer));
+		HAL_UART_Transmit_DMA(&huart1, TxBuffer, strlen((char*)TxBuffer));
 
 	}
 }
+
 /* USER CODE END 4 */
 
 /**
